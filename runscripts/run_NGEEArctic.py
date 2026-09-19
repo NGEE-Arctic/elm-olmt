@@ -70,6 +70,22 @@ postproc_freq      = 'Monthly'   #Can be daily, monthly, annual, hourly (not tes
 case_options={}
 #case_options['metdir'] = inputdata+'/atm/datm7/gswp3'
 
+#---- NGEE Arctic IM1: Polygonal Tundra ----
+#case_options['use_polygonal_tundra'] = '.true.'      #Polygonal tundra microtopography
+#case_options['unified_polygonal_tundra'] = '.true.'  #Requires use_polygonal_tundra above
+
+#---- NGEE Arctic IM2: Hillslope Hydrology ----
+#case_options['use_arctic_init'] = '.true.'              #Cold, saturated initial conditions
+#case_options['use_IM2_hillslope_hydrology'] = '.true.'   #Hillslope lateral flow
+
+#---- Phenology ----
+#case_options['onset_gdd_extension'] = '.true.'  #Extend leaf onset via GDD past summer solstice
+
+#---- Topounit downscaling/output (requires topounit-enabled surface data) ----
+#case_options['topounits_atmdownscale'] = True  #Atmospheric downscaling to topounits
+#case_options['topounits_raddownscale'] = True  #Radiation downscaling to topounits
+#case_options['arctic_topounit_output'] = True  #Enable topounit/PFT level (hist_dov2xy) output
+
 #--------------------ensemble options------------------------------------------------
 
 parm_list      = '' #'parm_list_example'  #Set parameter list (leave blank for no ensemble)
