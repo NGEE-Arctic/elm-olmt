@@ -1,7 +1,7 @@
 import sys
 sys.path.append('..')
 import model_ELM
-from OLMTutils import get_machine_info, get_site_info, get_point_list, get_default_diag_vars
+from OLMTutils import get_machine_info, get_site_info, get_point_list, get_arctic_diag_vars
 import os
 import numpy as np
 
@@ -57,7 +57,7 @@ run_startyear  =  1850    #Starting year for transient run, SP run or FATES C-on
 
 #Variables to post-process, time period and frequency of desired output.
 #  If not ensemble mode, plot these; if ensemble, use for further UQ analysis
-postproc_vars  = get_default_diag_vars(nutrients, use_fates) #Variables to automatically post-process
+postproc_vars  = get_arctic_diag_vars() #Arctic/permafrost diagnostic variables to automatically post-process
 postproc_startyear = 2006
 postproc_endyear   = 2015
 postproc_freq      = 'Monthly'   #Can be daily, monthly, annual, hourly (not tested)
