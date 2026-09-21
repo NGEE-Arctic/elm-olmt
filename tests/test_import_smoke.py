@@ -14,6 +14,7 @@ REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 ALLOWLIST = [
     "OLMTutils.py",
     "model_surrogate.py",
+    "model_ELM/tide_utils.py",
 ]
 
 

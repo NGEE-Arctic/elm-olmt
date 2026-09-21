@@ -125,3 +125,8 @@ def get_default_diag_vars(nutrients, use_fates):
         return ['TLAI','FPSN','QVEGT','QVEGE','QSOIL','EFLX_LH_TOT','FSH','SNOWDP','QRUNOFF','QDRAI','QOVER']
     else:
         return ['NEE','NBP','TLAI','TOTSOMC','CWDC','TOTLITC','TOTECOSYSC','NPP','GPP','QVEGT','QVEGE','EFLX_LH_TOT']
+
+#Default diagnostic variables for Arctic/permafrost simulations (active layer, water table, soil ice/liquid)
+def get_arctic_diag_vars():
+    return ['ALT','ALTMAX','SNOW_DEPTH','SOILICE','SOILLIQ','ZWT','ZWT_PERCH', \
+            'GPP','NPP','NEE','ER','TLAI','QVEGT','FSH','EFLX_LH_TOT','TSA','TSOI']
