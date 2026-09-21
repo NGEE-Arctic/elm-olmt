@@ -1,6 +1,7 @@
 import sys
 sys.path.append('..')
 import model_ELM
+from model_ELM.tide_utils import process_tide_components
 from OLMTutils import get_machine_info, get_site_info, get_point_list, get_arctic_diag_vars
 import os
 import numpy as np
@@ -21,11 +22,11 @@ exeroot = ''
 #----------------------Required inputs---------------------------------------------
 
 runtype = 'site'               #site,latlon_list,latlon_bbox
-mettype = 'gswp3'               #Site or reanalysis product to use (site, gswp3, era5, gswp3-daymet4, era5-daymet4)
+mettype = 'era5-daymet4'        #High-resolution hybrid forcing for coastal/marsh sites
 case_suffix = ''               #Identifier for cases (leave blank if none)
 
 if (runtype == 'site'):
-    sites = ['AK-SP-K64G']        #Site name, list of site names, or 'all' for all sites in site group
+    sites = ['AK-BEO']              #Barrow Environmental Observatory (coastal permafrost/marsh)
     sitegroup = 'NGEEArctic'       #Sites defined in <inputdata>/lnd/clm2/PTCLM/<sitegroup>_sitedata.txt
     numproc = 1
 else:
@@ -57,7 +58,7 @@ run_startyear  =  1850    #Starting year for transient run, SP run or FATES C-on
 
 #Variables to post-process, time period and frequency of desired output.
 #  If not ensemble mode, plot these; if ensemble, use for further UQ analysis
-postproc_vars  = get_arctic_diag_vars() #Arctic/permafrost diagnostic variables to automatically post-process
+postproc_vars  = get_arctic_diag_vars()+['QRUNOFF','QOVER','QDRAI','H2OSFC'] #Arctic + marsh hydrology diagnostics
 postproc_startyear = 2006
 postproc_endyear   = 2015
 postproc_freq      = 'Monthly'   #Can be daily, monthly, annual, hourly (not tested)
@@ -70,21 +71,18 @@ postproc_freq      = 'Monthly'   #Can be daily, monthly, annual, hourly (not tes
 case_options={}
 #case_options['metdir'] = inputdata+'/atm/datm7/gswp3'
 
-#---- NGEE Arctic IM1: Polygonal Tundra ----
-#case_options['use_polygonal_tundra'] = '.true.'      #Polygonal tundra microtopography
-#case_options['unified_polygonal_tundra'] = '.true.'  #Requires use_polygonal_tundra above
+#---- NGEE Arctic Marsh/Coastal Features ----
+case_options['marsh'] = True   #Turn on MARSH CPPDEF (marsh hydrology)
 
-#---- NGEE Arctic IM2: Hillslope Hydrology ----
-#case_options['use_arctic_init'] = '.true.'              #Cold, saturated initial conditions
-#case_options['use_IM2_hillslope_hydrology'] = '.true.'   #Hillslope lateral flow
+#Tide component file (NOAA harmonic constituents: Component,Amplitude(m),Speed(deg/hr),Phase(deg))
+case_options['tide_components_file'] = os.getcwd()+'/../examples/NGEEArctic/tide_components_example.csv'
 
-#---- Phenology ----
-#case_options['onset_gdd_extension'] = '.true.'  #Extend leaf onset via GDD past summer solstice
+#---- NGEE Arctic Parameterizations (compatible with marsh) ----
+case_options['use_arctic_init'] = '.true.'         #Cold, saturated initial conditions
+case_options['use_polygonal_tundra'] = '.true.'    #Polygonal tundra microtopography
 
-#---- Topounit downscaling/output (requires topounit-enabled surface data) ----
-#case_options['topounits_atmdownscale'] = True  #Atmospheric downscaling to topounits
-#case_options['topounits_raddownscale'] = True  #Radiation downscaling to topounits
-#case_options['arctic_topounit_output'] = True  #Enable topounit/PFT level (hist_dov2xy) output
+#---- Alquimia BGC (optional, for methane biogeochemistry; requires Alquimia library compiled with E3SM) ----
+#case_options['alquimia'] = '/path/to/alquimia_input.cfg'
 
 #--------------------ensemble options------------------------------------------------
 
@@ -335,6 +333,10 @@ for site in sites:
     #Build the case
     print('Building case')
     cases[c].build_case()
+
+    #Process tide harmonic constituents into clm_params.nc (marsh runs only)
+    if (hasattr(cases[c], 'tide_components_file')):
+        process_tide_components(cases[c].tide_components_file, cases[c].rundir+'/clm_params.nc')
 
     #Submit the case
     print('Submitting case')
