@@ -1,3 +1,4 @@
+import importlib.util
 import os
 import sys
 import pathlib
@@ -34,3 +35,21 @@ def olmtutils():
     sys.path.insert(0, str(REPO_ROOT))
     import OLMTutils
     return OLMTutils
+
+
+@pytest.fixture
+def tide_utils():
+    """Load model_ELM/tide_utils.py directly from its file path rather
+    than `import model_ELM.tide_utils`. The latter would run
+    model_ELM/__init__.py (`from .main import *`), which imports
+    model_ELM/main.py and model_ELM/makepointdata.py -- pulling in
+    optional runtime deps (e.g. geopy) and module-level CIME-oriented
+    side effects that are unrelated to tide_utils.py itself and are
+    deliberately excluded from tests/test_import_smoke.py's ALLOWLIST.
+    tide_utils.py only needs stdlib (csv/os/subprocess), so a direct,
+    package-independent load is safe and sufficient here."""
+    path = REPO_ROOT / "model_ELM" / "tide_utils.py"
+    spec = importlib.util.spec_from_file_location("tide_utils", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module

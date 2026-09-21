@@ -593,7 +593,8 @@ class ELMcase():
     #Excluded keys in case_options that are not namelist options (handled elsewhere)
     keys_exclude = ['suffix','surffile','domainfile','pftdynfile','paramfile','fates_paramfile', \
             'humhol','metdir','surffile_global','pftdynfile_global','domainfile_global', \
-            'topounits_atmdownscale','topounits_raddownscale','arctic_topounit_output']
+            'topounits_atmdownscale','topounits_raddownscale','arctic_topounit_output', \
+            'marsh','alquimia','tide_components_file','tide_forcing_file']
     #Custom namelist options
     for key in self.case_options.keys():
         if (not key in keys_exclude and not 'restart_' in key):
@@ -606,6 +607,8 @@ class ELMcase():
                 self.customize_namelist(variable=key,value=str(self.case_options[key]))
         elif ('humhol' in key):
             self.humhol=True
+        elif (key in ('tide_components_file','tide_forcing_file')):
+            setattr(self, key, self.case_options[key])
     if ('ad_spinup' in self.casename):    #Turn on supplemental P for ad spinup
         self.customize_namelist(variable='suplphos',value="'ALL'")
     if (self.case_options.get('unified_polygonal_tundra') and not self.case_options.get('use_polygonal_tundra')):
@@ -639,6 +642,12 @@ class ELMcase():
     #global CPPDEF modifications
     if (self.humhol):
         self.cppdefs='HUM_HOL'
+    if (self.case_options.get('marsh')):
+        self.cppdefs = self.cppdefs+',MARSH' if self.cppdefs != '' else 'MARSH'
+    if (self.case_options.get('alquimia')):
+        self.cppdefs = self.cppdefs+',ALQUIMIA' if self.cppdefs != '' else 'ALQUIMIA'
+        self.customize_namelist(variable='use_alquimia',value='.true.')
+        self.customize_namelist(variable='alquimia_inputfile',value="'"+self.case_options['alquimia']+"'")
     if (self.is_bypass()):
       macrofiles=['./Macros.make','./Macros.cmake']
       for f in macrofiles:
