@@ -592,7 +592,9 @@ class ELMcase():
                 +"trop_mozart_aero/aero/aerosoldep_rcp4.5_monthly_1849-2104_1.9x2.5_c100402.nc'")
     #Excluded keys in case_options that are not namelist options (handled elsewhere)
     keys_exclude = ['suffix','surffile','domainfile','pftdynfile','paramfile','fates_paramfile', \
-            'humhol','metdir','surffile_global','pftdynfile_global','domainfile_global']
+            'humhol','metdir','surffile_global','pftdynfile_global','domainfile_global', \
+            'topounits_atmdownscale','topounits_raddownscale','arctic_topounit_output', \
+            'marsh','alquimia','tide_components_file','tide_forcing_file']
     #Custom namelist options
     for key in self.case_options.keys():
         if (not key in keys_exclude and not 'restart_' in key):
@@ -605,8 +607,23 @@ class ELMcase():
                 self.customize_namelist(variable=key,value=str(self.case_options[key]))
         elif ('humhol' in key):
             self.humhol=True
+        elif (key in ('tide_components_file','tide_forcing_file')):
+            setattr(self, key, self.case_options[key])
     if ('ad_spinup' in self.casename):    #Turn on supplemental P for ad spinup
         self.customize_namelist(variable='suplphos',value="'ALL'")
+    if (self.case_options.get('unified_polygonal_tundra') and not self.case_options.get('use_polygonal_tundra')):
+        print('Error: unified_polygonal_tundra option requires use_polygonal_tundra to be set.  Exiting')
+        sys.exit(1)
+    #NGEE Arctic topounit downscaling (build-time option, not a namelist variable)
+    if (self.case_options.get('topounits_atmdownscale')):
+        self.xmlchange('ELM_BLDNML_OPTS',append='"-topounit"')
+    if (self.case_options.get('topounits_raddownscale')):
+        self.customize_namelist(variable='use_top_solar_rad',value='.true.')
+    if (self.case_options.get('topounits_atmdownscale') or self.case_options.get('use_IM2_hillslope_hydrology')):
+        #Topounits split PFTs into natpfts and cfts; requires crop landunit
+        self.customize_namelist(variable='create_crop_landunit',value='.true.')
+    if (self.case_options.get('arctic_topounit_output')):
+        self.customize_namelist(variable='hist_dov2xy',value='.true., .false.')
 
     #set domain file information
     if (domainfile == ''):
@@ -625,6 +642,12 @@ class ELMcase():
     #global CPPDEF modifications
     if (self.humhol):
         self.cppdefs='HUM_HOL'
+    if (self.case_options.get('marsh')):
+        self.cppdefs = self.cppdefs+',MARSH' if self.cppdefs != '' else 'MARSH'
+    if (self.case_options.get('alquimia')):
+        self.cppdefs = self.cppdefs+',ALQUIMIA' if self.cppdefs != '' else 'ALQUIMIA'
+        self.customize_namelist(variable='use_alquimia',value='.true.')
+        self.customize_namelist(variable='alquimia_inputfile',value="'"+self.case_options['alquimia']+"'")
     if (self.is_bypass()):
       macrofiles=['./Macros.make','./Macros.cmake']
       for f in macrofiles:
