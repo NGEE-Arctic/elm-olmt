@@ -327,3 +327,8 @@ def docker_to_host_path(path):
     if path.startswith("/inputdata"):
         return path.replace("/inputdata", "/Users/zdr/models/inputdata", 1)
     return path
+
+#Default diagnostic variables for Arctic/permafrost simulations (active layer, water table, soil ice/liquid)
+def get_arctic_diag_vars():
+    return ['ALT','ALTMAX','SNOW_DEPTH','SOILICE','SOILLIQ','ZWT','ZWT_PERCH', \
+            'GPP','NPP','NEE','ER','TLAI','QVEGT','FSH','EFLX_LH_TOT','TSA','TSOI']
