@@ -5,8 +5,8 @@ Tests for the Arctic/permafrost diagnostic variable list added in PR5
 PR5 adds a new, no-argument function get_arctic_diag_vars() to
 OLMTutils.py, alongside (not replacing) the pre-existing
 get_default_diag_vars(nutrients, use_fates). It does not modify
-get_default_diag_vars at all, so we also pin that function's pre-PR5
-behavior here to catch any accidental regression.
+get_default_diag_vars at all, so we also pin that function's current
+return values here to catch any accidental regression.
 """
 
 # Permafrost-specific diagnostics (active layer, water table, soil ice/
@@ -56,7 +56,10 @@ def test_get_default_diag_vars_still_present_and_unchanged(olmtutils):
     ]
     assert olmtutils.get_default_diag_vars("npk", False) == [
         "NEE", "NBP", "TLAI", "TOTSOMC", "CWDC", "TOTLITC", "TOTECOSYSC",
-        "NPP", "GPP", "QVEGT", "QVEGE", "EFLX_LH_TOT",
+        "NPP", "GPP", "QVEGT", "QVEGE", "EFLX_LH_TOT", "TOTVEGC_ABG",
+        "TOTVEGC", "QOVER", "QSOIL", "XR", "ER", "AR", "HR", "FSH",
+        "SNOWDP", "ZWT", "CPOOL", "NPOOL", "PPOOL", "FPG", "FPI",
+        "NDEP_TO_SMINN", "NFIX_TO_SMINN", "NEP", "QDRAI", "QRUNOFF",
     ]
 
 

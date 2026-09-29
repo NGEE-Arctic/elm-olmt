@@ -42,14 +42,12 @@ def test_site_codes_consistent_across_all_three_files(inputdata_root):
         EXPECTED_SITES
 
 
-def test_missing_trailing_newline_corrupts_pft_parse(olmtutils, tmp_path):
+def test_missing_trailing_newline_does_not_corrupt_pft_parse(olmtutils, tmp_path):
     """
-    get_site_info uses s[:-1] to strip newlines (OLMTutils.py) rather than
-    .rstrip('\\n'). This is safe only because every shipped *_pftdata.txt
-    file ends with a trailing newline. This test pins that landmine: a
-    pftdata file whose last line lacks a trailing newline gets its last
-    field truncated by one character instead of the newline being removed,
-    which breaks int() conversion of the PFT index column.
+    get_site_info parses *_pftdata.txt via csv.reader (OLMTutils.py), which
+    does not depend on a trailing newline to delimit the last field. This
+    test pins that a pftdata file whose last line lacks a trailing newline
+    still parses correctly, with the PFT index/percent columns intact.
     """
     ptclm = tmp_path / "lnd" / "clm2" / "PTCLM"
     ptclm.mkdir(parents=True)
@@ -65,5 +63,7 @@ def test_missing_trailing_newline_corrupts_pft_parse(olmtutils, tmp_path):
         "site_code,soil_depth,n_layers,layer_depth,layer_sand%,layer_clay%\n"
         "X-1,-999,1,-999,45.0,15.0\n"
     )
-    with pytest.raises(ValueError):
-        olmtutils.get_site_info(str(tmp_path), sitegroup="Fake")
+    info = olmtutils.get_site_info(str(tmp_path), sitegroup="Fake")
+    pft = info["X-1"]["PCT_NAT_PFT"]
+    assert pft[12] == 85.0
+    assert pft[11] == 15.0
